@@ -7,7 +7,7 @@ window.FCN_WEB={
   site:"https://bahize1.github.io/suivi/",
   /* Droits (3 operations gratuites, credits, abonnements) : laissez false tant que vous n'avez
      pas lance supabase-droits.sql ET active billing dans la base (voir le guide). */
-  billing:false,
+  billing:true,
   /* Paiement en ligne (FedaPay) : true seulement apres deploiement des 2 fonctions pay-create et pay-webhook. */
-  pay:false
+  pay:true
 };
