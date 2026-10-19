@@ -1,5 +1,5 @@
-/* Faysal CalcNote : fonctionne sans connexion une fois ouverte une première fois. */
-const VERSION = 'faysal-calcnote-v12';
+/* CalcNote Faysal : fonctionne sans connexion une fois ouverte une première fois. */
+const VERSION = 'faysal-calcnote-v13';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
