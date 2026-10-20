@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://bahize1.github.io/suivi/sitemap.xml
