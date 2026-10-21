@@ -1,0 +1,36 @@
+name: Surveillance du site
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+jobs:
+  verifier:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verifier le site, la config, Supabase et l'APK
+        env:
+          SITE: https://bahize1.github.io/suivi
+          REPO: Bahize1/suivi
+        run: |
+          set -u
+          ERR=0
+          bad(){ echo "::error::$1"; ERR=1; }
+          curl -fsSL --retry 3 --retry-delay 5 -o index.html "$SITE/" || bad "Le site ne repond pas"
+          SIZE=$(wc -c < index.html 2>/dev/null || echo 0)
+          echo "index.html : $SIZE octets"
+          [ "$SIZE" -gt 200000 ] || bad "index.html trop petit ($SIZE octets) : fichier incomplet ?"
+          grep -q 'id="splash"' index.html || bad "index.html ne contient pas l'application"
+          grep -q 'google-site-verification' index.html || echo "Note : balise Google absente"
+          curl -fsSL --retry 3 -o sw.js "$SITE/sw.js" || bad "sw.js introuvable"
+          curl -fsSL --retry 3 -o config.js "$SITE/config.js" || bad "config.js introuvable"
+          URL=$(grep -o 'url:"[^"]*"' config.js | head -1 | cut -d'"' -f2)
+          KEY=$(grep -o 'anon:"[^"]*"' config.js | head -1 | cut -d'"' -f2)
+          [ -n "$URL" ] && [ -n "$KEY" ] || bad "config.js sans adresse Supabase"
+          if [ -n "$URL" ]; then
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" --retry 3 "$URL/auth/v1/health" -H "apikey: $KEY")
+            echo "Supabase auth : $CODE"
+            [ "$CODE" = "200" ] || bad "Supabase ne repond pas (code $CODE) : projet en pause ou hors service ?"
+          fi
+          APK=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | grep -c '\.apk"')
+          [ "$APK" -ge 1 ] || bad "Aucun fichier .apk dans la derniere Release"
+          exit $ERR
