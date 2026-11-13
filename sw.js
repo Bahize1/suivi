@@ -1,6 +1,6 @@
 /* CalcNote Faysal : fonctionne sans connexion une fois ouverte une première fois. */
-const VERSION = 'faysal-calcnote-v31';
-const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
+const VERSION = 'faysal-calcnote-3.9.2';
+const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./apple-touch-icon.png", "./favicon.svg", "./sentinel.config.js", "./sentinel.js"];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
@@ -48,6 +48,9 @@ self.addEventListener('fetch', e => {
 
   // Fichiers de l'application : copie locale d'abord.
   if (url.origin === location.origin) {
-    e.respondWith(caches.match(req).then(hit => hit || fetch(req)));
+    e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {
+      if (res && res.ok) { const copy = res.clone(); caches.open(VERSION).then(c => c.put(req, copy)); }
+      return res;
+    })));
   }
 });
